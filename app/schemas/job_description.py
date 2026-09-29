@@ -27,3 +27,8 @@ class JobDescriptionOut(JobDescriptionBase):
 
     class Config:
         from_attributes = True
+
+
+class JobDescriptionOption(BaseModel):
+    id: int
+    title: str

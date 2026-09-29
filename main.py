@@ -14,8 +14,9 @@ from app.core.exceptions import (
     validation_exception_handler,
     generic_exception_handler
 )
-from app.database.session import engine
+from app.database.session import SessionLocal, engine
 from app.database.base import Base
+from app.crud.job_description import seed_predefined_job_descriptions
 import app.models  # Ensure all SQLAlchemy models are registered
 from app.routers import (
     auth_router,
@@ -39,8 +40,16 @@ async def lifespan(app: FastAPI):
     try:
         Base.metadata.create_all(bind=engine)
         logger.info("SQLAlchemy database tables verified/created successfully.")
-    except Exception as e:
-        logger.error(f"Error creating database tables on startup: {e}")
+
+        with SessionLocal() as db:
+            seeded_count = seed_predefined_job_descriptions(db)
+        if seeded_count:
+            logger.info(f"Seeded {seeded_count} predefined job descriptions.")
+        else:
+            logger.info("Predefined job descriptions already present; no seed needed.")
+    except Exception:
+        logger.exception("Database initialization failed during startup.")
+        raise
 
     yield
 

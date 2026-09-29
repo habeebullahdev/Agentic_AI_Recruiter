@@ -286,15 +286,16 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         async function loadJobDescriptions() {
             try {
-                const res = await fetch('/api/v1/jd/');
+                const res = await fetch('/api/v1/jd/options');
+                if (!res.ok) throw new Error(`Request failed (${res.status})`);
                 const data = await res.json();
                 const select = document.getElementById('jdSelect');
                 select.innerHTML = '';
-                if (data.items && data.items.length > 0) {
-                    data.items.forEach(jd => {
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(jd => {
                         const opt = document.createElement('option');
                         opt.value = jd.id;
-                        opt.textContent = `${jd.title} (ID #${jd.id})`;
+                        opt.textContent = jd.title;
                         select.appendChild(opt);
                     });
                 } else {
@@ -302,6 +303,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 }
             } catch (err) {
                 console.error('Failed to load JDs:', err);
+                document.getElementById('jdSelect').innerHTML = '<option value="">Unable to load job roles</option>';
             }
         }
 

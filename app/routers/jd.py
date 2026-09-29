@@ -2,9 +2,15 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.orm import Session
 from app.database.session import get_db
+from app.crud.job_description import get_job_description_options
 from app.models.job_description import JobDescription
 from app.models.user import User, UserRole
-from app.schemas.job_description import JobDescriptionCreate, JobDescriptionUpdate, JobDescriptionOut
+from app.schemas.job_description import (
+    JobDescriptionCreate,
+    JobDescriptionUpdate,
+    JobDescriptionOut,
+    JobDescriptionOption,
+)
 from app.schemas.common import APIResponse, PaginatedResponse
 from app.services.rag_service import rag_service
 from app.core.dependencies import get_current_user, get_optional_current_user, require_roles
@@ -12,6 +18,16 @@ from app.core.exceptions import EntityNotFoundException, PermissionDeniedExcepti
 from app.core.logging import logger
 
 router = APIRouter(prefix="/jd", tags=["Job Description Management"])
+
+
+@router.get(
+    "/options",
+    response_model=List[JobDescriptionOption],
+    summary="List job roles for selection",
+    description="Returns every available job description as an ID and title pair.",
+)
+def list_job_description_options(db: Session = Depends(get_db)):
+    return get_job_description_options(db)
 
 
 @router.post(
